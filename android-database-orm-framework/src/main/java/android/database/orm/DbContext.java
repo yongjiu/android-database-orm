@@ -1,6 +1,8 @@
 package android.database.orm;
 
 import android.content.Context;
+import android.database.orm.converter.Converter;
+import android.database.orm.converter.ReflectConverter;
 import android.database.orm.sql.*;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -29,10 +31,14 @@ public class DbContext implements DbMapping {
         return new From(this, table);
     }
 
+    /* -------------------------------------------------------------------------------------------------------------- */
+
     public <T extends Dao> Select select(Class<T> table, String... columns) {
         DbException.checkNull(table, "table");
         return this.from(table).select(columns);
     }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
 
     public <T extends Dao> Delete delete(Class<T> table) {
         DbException.checkNull(table, "table");
@@ -44,15 +50,36 @@ public class DbContext implements DbMapping {
         return this.from(table).delete().exec(whereClause, whereArgs);
     }
 
+    /* -------------------------------------------------------------------------------------------------------------- */
+
     public <T extends Dao> Insert insert(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Insert(this, table);
     }
 
+    public <T extends Dao> Result insert(T dao) {
+        DbException.checkNull(dao, "dao");
+        return new Insert(this, dao.getClass()).insert(dao);
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+
     public <T extends Dao> Update update(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Update(this, table);
     }
+
+    public <T extends Dao> Result update(T dao) {
+        DbException.checkNull(dao, "dao");
+        return new Update(this, dao.getClass()).update(dao);
+    }
+
+    public <T extends Dao> Result update(T dao, String clause, String... args) {
+        DbException.checkNull(dao, "dao");
+        return new Update(this, dao.getClass()).update(dao, clause, args);
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
 
     public <T extends Dao> Boolean create(Class<T> table) {
         DbException.checkNull(table, "table");
@@ -63,6 +90,8 @@ public class DbContext implements DbMapping {
         return this.exec(true, tables);
     }
 
+    /* -------------------------------------------------------------------------------------------------------------- */
+
     public <T extends Dao> Boolean truncate(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Truncate(this, table).exec();
@@ -72,6 +101,8 @@ public class DbContext implements DbMapping {
         return this.exec(null, tables);
     }
 
+    /* -------------------------------------------------------------------------------------------------------------- */
+
     public <T extends Dao> Boolean drop(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Drop(this, table).exec();
@@ -80,6 +111,8 @@ public class DbContext implements DbMapping {
     public <T extends Dao> Boolean drop(Class<T>... tables) {
         return this.exec(false, tables);
     }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
 
     private <T extends Dao> Boolean exec(Boolean exec, Class<T>... tables) {
         if(tables.length == 0) return false;
@@ -130,17 +163,25 @@ public class DbContext implements DbMapping {
         return this.mDbMapping.getMapper(table, check);
     }
 
+    @Override
+    public <T extends Dao> Converter<T> getConverter(Class<T> table) {
+        return this.mDbMapping.getConverter(table);
+    }
+
     public static class Builder implements DbMapping {
 
         private final Context                               mContext;
         private final Map<Class<? extends Dao>, DbMapper>   mTables;
+        private final Map<Class<? extends Dao>, Converter>  mConverters;
         private SQLiteDatabase.CursorFactory                mCursorFactory;
         private String                                      mDatabaseName;
         private int                                         mDatabaseVersion;
+        private ReflectConverter                            mReflectConverter;
 
         public Builder(Context context) {
-            this.mTables = new HashMap<Class<? extends Dao>, DbMapper>();
-            this.mContext = context;
+            this.mTables        = new HashMap<Class<? extends Dao>, DbMapper>();
+            this.mConverters    = new HashMap<Class<? extends Dao>, Converter>();
+            this.mContext       = context;
         }
 
         public Context getContext() {
@@ -184,6 +225,49 @@ public class DbContext implements DbMapping {
         @Override
         public synchronized <T extends Dao> DbMapper getMapper(Class<T> table, boolean check) {
             return this.mTables.get(table);
+        }
+
+        @Override
+        public <T extends Dao> Converter<T> getConverter(Class<T> table) {
+            if(this.mConverters.containsKey(table))
+                return this.mConverters.get(table);
+
+            if(this.mReflectConverter == null)
+                this.mReflectConverter = new ReflectConverter<T>(this);
+
+            return this.mReflectConverter;
+        }
+
+        /**************************************************************************************************************/
+
+        public Builder addConverters(Converter<? extends Dao>... converters) {
+            if(converters.length == 0) return this;
+            return this.addConverters(Arrays.asList(converters));
+        }
+
+        public Builder addConverters(List<Converter<? extends Dao>> converters) {
+            return this.setConverters(converters, true);
+        }
+
+        public Builder setConverters(Converter<? extends Dao>... converters) {
+            if(converters.length == 0) return this;
+            return this.setConverters(Arrays.asList(converters));
+        }
+
+        public Builder setConverters(List<Converter<? extends Dao>> converters) {
+            return this.setConverters(converters, false);
+        }
+
+        private Builder setConverters(List<Converter<? extends Dao>> converters, boolean append) {
+            if(!append && !this.mConverters.isEmpty())
+                this.mConverters.clear();
+
+            if(converters != null && !converters.isEmpty()) {
+                for (Converter<? extends Dao> converter : converters) {
+                    this.mConverters.put(converter.getTable(), converter);
+                }
+            }
+            return this;
         }
 
         /**************************************************************************************************************/

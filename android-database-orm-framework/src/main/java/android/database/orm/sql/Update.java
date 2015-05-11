@@ -5,6 +5,7 @@ import android.database.orm.Dao;
 import android.database.orm.DbContext;
 import android.database.orm.DbException;
 import android.database.orm.DbMapper;
+import android.database.orm.converter.Converter;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -39,7 +40,15 @@ public class Update extends ResultExecutable {
     }
 
     public <T extends Dao> Result update(T dao, String clause, String... args) {
-        return Result.failed(null); // TODO
+        DbException.checkNull(dao, "dao");
+
+        Class<T> table = (Class<T>)dao.getClass();
+
+        Converter<T> converter = this.mDbContext.getConverter(table);
+        ContentValues contentValues = converter.toContentValues(dao);
+
+        DbMapper mapper = this.mDbContext.getMapper(table, true);
+        return this.exec(mapper, contentValues, clause, args);
     }
 
     /******************************************************************************************************************/
