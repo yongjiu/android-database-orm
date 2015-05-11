@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.database.orm.Dao;
 import android.database.orm.DbContext;
+import android.database.orm.annotation.Column;
+import android.database.orm.annotation.Table;
 import android.database.orm.sql.*;
 import android.test.ApplicationTestCase;
 import junit.framework.Assert;
@@ -83,8 +85,44 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         List<TestDao> list2 = query1.list(TestDao.class);
     }
 
+    public void testInsertMethod() {
+        Result result = new Insert(this.mDbContext, TestDao.class)
+                .values()
+                .set("Name", "yongjiu")
+                .set("Gender", false)
+                .setNull("Age")
+                .exec();
+        Assert.assertTrue(result.success());
+    }
+
+    public void testUpdateMethod() {
+        Result result1 = new Update(this.mDbContext, TestDao.class)
+                .set("Name", "yongjiu")
+                .set("Gender", true)
+                .setNull("Age")
+                .where("ID=?", "1")
+                .exec();
+        Assert.assertTrue(result1.success());
+
+        Result result2 = new Update(this.mDbContext, TestDao.class).update(new TestDao(), "ID=?", "1");
+        Assert.assertTrue(result2.success());
+    }
+
 }
 
+@Table("tbl_test")
 class TestDao implements Dao {
+
+    @Column("ID")
+    public Long id;
+
+    @Column("Name")
+    public String name;
+
+    @Column("Gender")
+    public Boolean gender;
+
+    @Column("Age")
+    public Integer age;
 
 }
