@@ -21,15 +21,19 @@ public abstract class AbstractDao implements Dao {
     }
 
     public Result delete() {
-        Where where = this.getWhereByKeys();
-        if(where == null) throw new IllegalArgumentException("where");
+        Where where = this.onGetWhereByKeys();
         return this.mDbContext.delete(this.getClass(), where.clause, where.args);
     }
 
     public Result update() {
+        Where where = this.onGetWhereByKeys();
+        return this.mDbContext.update(this, where.clause, where.args);
+    }
+
+    protected Where onGetWhereByKeys() {
         Where where = this.getWhereByKeys();
         if(where == null) throw new IllegalArgumentException("where");
-        return this.mDbContext.update(this, where.clause, where.args);
+        return where;
     }
 
     protected abstract Where getWhereByKeys();

@@ -39,6 +39,8 @@ public class Query implements Closeable {
         return this.mCursor.getCount();
     }
 
+    /******************************************************************************************************************/
+
     public <T extends Dao> List<T> list(Class<T> cls) {
         List<T> list = new ArrayList<T>();
         try {
@@ -52,17 +54,78 @@ public class Query implements Closeable {
         return list;
     }
 
-    public <T extends Dao> T single(Class<T> cls, int index) {
+    /******************************************************************************************************************/
+
+    public <T extends Dao> T singleOrNull(Class<T> cls, int index) {
+        return this.singleOrDefault(cls, index, null);
+    }
+
+    public <T extends Dao> T singleOrDefault(Class<T> cls, int index, T defaultValue) {
         if(this.mCursor.move(index)) {
-            return this.toObject(this.mCursor, cls);
+            return this.toObject(cls);
         }
-        return null;
+        return defaultValue;
+    }
+
+    public <T extends Dao> T single(Class<T> cls, int index) {
+        this.mCursor.move(index);
+        return this.toObject(cls);
+    }
+
+    /* -------------------------------------------------------------------------------------------------------------- */
+
+    public <T extends Dao> T singleOrNull(Class<T> cls) {
+        return this.firstOrNull(cls);
+    }
+
+    public <T extends Dao> T singleOrDefault(Class<T> cls, T defaultValue) {
+        return this.firstOrDefault(cls, defaultValue);
+    }
+
+    public <T extends Dao> T single(Class<T> cls) {
+        return this.first(cls);
     }
 
     /******************************************************************************************************************/
 
-    private <T extends Dao> T toObject(Cursor cursor, Class<T> cls) {
-        return this.toObject(cursor, cls, true);
+    public <T extends Dao> T firstOrNull(Class<T> cls) {
+        return this.firstOrDefault(cls, null);
+    }
+
+    public <T extends Dao> T firstOrDefault(Class<T> cls, T defaultValue) {
+        if(this.mCursor.moveToFirst()) {
+            return this.toObject(cls);
+        }
+        return defaultValue;
+    }
+
+    public <T extends Dao> T first(Class<T> cls) {
+        this.mCursor.moveToFirst();
+        return this.toObject(cls);
+    }
+
+    /******************************************************************************************************************/
+
+    public <T extends Dao> T lastOrNull(Class<T> cls) {
+        return this.lastOrDefault(cls, null);
+    }
+
+    public <T extends Dao> T lastOrDefault(Class<T> cls, T defaultValue) {
+        if(this.mCursor.moveToLast()) {
+            return this.toObject(cls);
+        }
+        return defaultValue;
+    }
+
+    public <T extends Dao> T last(Class<T> cls) {
+        this.mCursor.moveToLast();
+        return this.toObject(cls);
+    }
+
+    /******************************************************************************************************************/
+
+    private <T extends Dao> T toObject(Class<T> cls) {
+        return this.toObject(this.mCursor, cls, true);
     }
 
     private <T extends Dao> T toObject(Cursor cursor, Class<T> cls, boolean close) {

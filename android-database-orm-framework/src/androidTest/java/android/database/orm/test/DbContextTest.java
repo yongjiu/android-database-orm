@@ -30,7 +30,7 @@ public class DbContextTest extends ApplicationTest {
 
     @Override
     public void testDeleteMethod() {
-        Result result1  = this.mDbContext.delete(UserDao.class).exec();
+        Result result1  = this.mDbContext.delete(UserDao.class).exec(); // delete all
         Assert.assertTrue(result1.success());
 
         Result result2  = this.mDbContext.delete(UserDao.class).exec("1=1");
@@ -53,7 +53,7 @@ public class DbContextTest extends ApplicationTest {
         List<UserDao> list2 = query2.list(UserDao.class);
 
         // EXEC SELECT ID, Name, Gender, Age from TABLE;
-        Query query3        = this.mDbContext.select(UserDao.class, "ID", "Name", "Gender", "Age").exec();
+        Query query3        = this.mDbContext.select(UserDao.class, "ID", "Name", "Gender", "Age").exec(); // select all
         List<UserDao> list3 = query3.list(UserDao.class);
     }
 
