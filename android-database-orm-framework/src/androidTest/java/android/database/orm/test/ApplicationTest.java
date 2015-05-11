@@ -7,6 +7,7 @@ import android.database.orm.DbContext;
 import android.database.orm.sql.*;
 import android.test.ApplicationTestCase;
 import junit.framework.Assert;
+import java.util.List;
 
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
@@ -50,6 +51,36 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     public void testDropMethod() {
         Boolean success = new Drop(this.mDbContext, TestDao.class).exec();
         Assert.assertTrue(success);
+    }
+
+    /**************************************************************************************************************/
+
+    public void testDeleteMethod() {
+        From from       = new From(this.mDbContext, TestDao.class);
+
+        Result result1  = new Delete(from).exec();
+        Assert.assertTrue(result1.success());
+
+        Result result2  = from.delete().exec("1=1");
+        Assert.assertTrue(result2.success());
+
+        Result result3  = from.delete().where("1=1").exec();
+        Assert.assertTrue(result3.success());
+    }
+
+    public void testSelectMethod() {
+        From from           = new From(this.mDbContext, TestDao.class);
+
+        // EXEC SELECT ID, Name, Gender, Age from TABLE;
+        Query query1        = new Select(from, "ID", "Name", "Gender", "Age").exec();
+        List<TestDao> list1 = query1.list(TestDao.class);
+
+        // EXEC SELECT * from TABLE WHERE 1=1;
+        Query query2        = from.select().where("1=1").exec(); // select all
+        TestDao dao         = query2.single(TestDao.class, 0);
+
+        Query query3        = from.select().distinct().groupBy("").orderBy("").having("").limit(100).exec();
+        List<TestDao> list2 = query1.list(TestDao.class);
     }
 
 }
