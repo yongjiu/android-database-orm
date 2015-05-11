@@ -23,6 +23,94 @@ public class DbContext implements DbMapping {
 
     }
 
+    /**************************************************************************************************************/
+
+    public From from(Class<? extends Dao> table) {
+        return new From(this, table);
+    }
+
+    public Select select(Class<? extends Dao> table, String... columns) {
+        DbException.checkNull(table, "table");
+        return this.from(table).select(columns);
+    }
+
+    public Delete delete(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return this.from(table).delete();
+    }
+
+    public Insert insert(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return new Insert(this, table);
+    }
+
+    public Update update(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return new Update(this, table);
+    }
+
+    public Boolean create(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return new Create(this, table).exec();
+    }
+
+    public Boolean create(Class<? extends Dao>... tables) {
+        return this.exec(true, tables);
+    }
+
+    public Boolean truncate(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return new Truncate(this, table).exec();
+    }
+
+    public Boolean truncate(Class<? extends Dao>... tables) {
+        return this.exec(null, tables);
+    }
+
+    public Boolean drop(Class<? extends Dao> table) {
+        DbException.checkNull(table, "table");
+        return new Drop(this, table).exec();
+    }
+
+    public Boolean drop(Class<? extends Dao>... tables) {
+        return this.exec(false, tables);
+    }
+
+    private Boolean exec(Boolean exec, Class<? extends Dao>... tables) {
+        if(tables.length == 0) return false;
+        boolean success = true;
+        SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
+        db.beginTransaction();
+        try {
+            success &= exec(exec, db, this.mDbMapping, tables);
+            if(success) db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+        return success;
+    }
+
+    /******************************************************************************************************************/
+
+    public void execSQL(String sql) {
+        SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
+        db.execSQL(sql);
+        db.close();
+    }
+
+    public void execSQL(String sql, Object[] bindArgs) {
+        SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
+        db.execSQL(sql, bindArgs);
+        db.close();
+    }
+
+    public Query rawQuery(String sql, String[] selectionArgs) {
+        return Select.rawQuery(this, sql, selectionArgs);
+    }
+
+    /**************************************************************************************************************/
+
     public SQLiteOpenHelper getDbHelper() {
         return this.mDbHelper;
     }
@@ -152,13 +240,25 @@ public class DbContext implements DbMapping {
 
     /**************************************************************************************************************/
 
-    public static <T extends Dao> void createTables(SQLiteDatabase db, DbMapping mapping, Class<T>... daos) {
-        List<Class<T>> tables = daos.length == 0 ? new ArrayList(mapping.getTables()) : Arrays.asList(daos);
-        if(tables.isEmpty()) return;
+    public static <T extends Dao> void createTables(SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
+        List<Class<T>> daos = tables.length == 0 ? new ArrayList(mapping.getTables()) : Arrays.asList(tables);
+        if(daos.isEmpty()) return;
+        exec(true, db, mapping, tables);
+    }
+
+    private static <T extends Dao> Boolean exec(Boolean exec, SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
+        boolean success = true;
         for (Class<T> table : tables) {
             DbMapper mapper = mapping.getMapper(table, true);
-            new Create(mapper, db).exec();
+            if(exec == null) {
+                success &= new Truncate(mapper, db).exec();
+            } else if(exec) {
+                success &= new Create(mapper, db).exec();
+            } else {
+                success &= new Drop(mapper, db).exec();
+            }
         }
+        return success;
     }
 
 }

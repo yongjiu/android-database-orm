@@ -41,18 +41,27 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     /**************************************************************************************************************/
 
     public void testCreateMethod() {
-        Boolean success = new Create(this.mDbContext, TestDao.class).exec();
-        Assert.assertTrue(success);
+        Boolean success1 = new Create(this.mDbContext, TestDao.class).exec();
+        Assert.assertTrue(success1);
+
+        Boolean success2 = this.mDbContext.create(TestDao.class);
+        Assert.assertTrue(success2);
     }
 
     public void testTruncateMethod() {
-        Boolean success = new Truncate(this.mDbContext, TestDao.class).exec();
-        Assert.assertTrue(success);
+        Boolean success1 = new Truncate(this.mDbContext, TestDao.class).exec();
+        Assert.assertTrue(success1);
+
+        Boolean success2 = this.mDbContext.truncate(TestDao.class);
+        Assert.assertTrue(success2);
     }
 
     public void testDropMethod() {
-        Boolean success = new Drop(this.mDbContext, TestDao.class).exec();
-        Assert.assertTrue(success);
+        Boolean success1 = new Drop(this.mDbContext, TestDao.class).exec();
+        Assert.assertTrue(success1);
+
+        Boolean success2 = this.mDbContext.drop(TestDao.class);
+        Assert.assertTrue(success2);
     }
 
     /**************************************************************************************************************/
@@ -68,6 +77,9 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
 
         Result result3  = from.delete().where("1=1").exec();
         Assert.assertTrue(result3.success());
+
+        Result result4  = this.mDbContext.delete(TestDao.class).where("1=1").exec();
+        Assert.assertTrue(result4.success());
     }
 
     public void testSelectMethod() {
@@ -83,16 +95,22 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
 
         Query query3        = from.select().distinct().groupBy("").orderBy("").having("").limit(100).exec();
         List<TestDao> list2 = query1.list(TestDao.class);
+
+        Query query4        = this.mDbContext.select(TestDao.class).where("1=1").exec();
+
     }
 
     public void testInsertMethod() {
-        Result result = new Insert(this.mDbContext, TestDao.class)
+        Result result1 = new Insert(this.mDbContext, TestDao.class)
                 .values()
                 .set("Name", "yongjiu")
                 .set("Gender", false)
                 .setNull("Age")
                 .exec();
-        Assert.assertTrue(result.success());
+        Assert.assertTrue(result1.success());
+
+        Result result2  = this.mDbContext.insert(TestDao.class).insert(new TestDao());
+        Assert.assertTrue(result2.success());
     }
 
     public void testUpdateMethod() {
@@ -106,6 +124,9 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
 
         Result result2 = new Update(this.mDbContext, TestDao.class).update(new TestDao(), "ID=?", "1");
         Assert.assertTrue(result2.success());
+
+        Result result3  = this.mDbContext.update(TestDao.class).update(new TestDao(), "ID=?", "1");
+        Assert.assertTrue(result3.success());
     }
 
 }
