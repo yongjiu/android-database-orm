@@ -5,4 +5,7 @@ package android.database.orm;
  */
 public interface DbMapping {
 
+    <T extends Dao> java.util.Set<Class<T>> getTables();
+    <T extends Dao> DbMapper getMapper(Class<T> table, boolean check);
+
 }

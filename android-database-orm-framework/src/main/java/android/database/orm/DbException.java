@@ -5,4 +5,13 @@ package android.database.orm;
  */
 public class DbException extends Exception {
 
+    public static void checkNull(Object nullable, String msg) {
+        if(nullable != null) return;
+        throw new IllegalArgumentException(msg);
+    }
+
+    public static void checkMapper(DbMapper mapper) {
+        checkNull(mapper, "mapper");
+    }
+
 }
