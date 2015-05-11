@@ -25,58 +25,63 @@ public class DbContext implements DbMapping {
 
     /**************************************************************************************************************/
 
-    public From from(Class<? extends Dao> table) {
+    public <T extends Dao> From from(Class<T> table) {
         return new From(this, table);
     }
 
-    public Select select(Class<? extends Dao> table, String... columns) {
+    public <T extends Dao> Select select(Class<T> table, String... columns) {
         DbException.checkNull(table, "table");
         return this.from(table).select(columns);
     }
 
-    public Delete delete(Class<? extends Dao> table) {
+    public <T extends Dao> Delete delete(Class<T> table) {
         DbException.checkNull(table, "table");
         return this.from(table).delete();
     }
 
-    public Insert insert(Class<? extends Dao> table) {
+    public <T extends Dao> Result delete(Class<T> table, String whereClause, String... whereArgs) {
+        DbException.checkNull(table, "table");
+        return this.from(table).delete().exec(whereClause, whereArgs);
+    }
+
+    public <T extends Dao> Insert insert(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Insert(this, table);
     }
 
-    public Update update(Class<? extends Dao> table) {
+    public <T extends Dao> Update update(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Update(this, table);
     }
 
-    public Boolean create(Class<? extends Dao> table) {
+    public <T extends Dao> Boolean create(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Create(this, table).exec();
     }
 
-    public Boolean create(Class<? extends Dao>... tables) {
+    public <T extends Dao> Boolean create(Class<T>... tables) {
         return this.exec(true, tables);
     }
 
-    public Boolean truncate(Class<? extends Dao> table) {
+    public <T extends Dao> Boolean truncate(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Truncate(this, table).exec();
     }
 
-    public Boolean truncate(Class<? extends Dao>... tables) {
+    public <T extends Dao> Boolean truncate(Class<T>... tables) {
         return this.exec(null, tables);
     }
 
-    public Boolean drop(Class<? extends Dao> table) {
+    public <T extends Dao> Boolean drop(Class<T> table) {
         DbException.checkNull(table, "table");
         return new Drop(this, table).exec();
     }
 
-    public Boolean drop(Class<? extends Dao>... tables) {
+    public <T extends Dao> Boolean drop(Class<T>... tables) {
         return this.exec(false, tables);
     }
 
-    private Boolean exec(Boolean exec, Class<? extends Dao>... tables) {
+    private <T extends Dao> Boolean exec(Boolean exec, Class<T>... tables) {
         if(tables.length == 0) return false;
         boolean success = true;
         SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
