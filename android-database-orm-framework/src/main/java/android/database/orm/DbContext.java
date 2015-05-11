@@ -224,7 +224,16 @@ public class DbContext implements DbMapping {
 
         @Override
         public synchronized <T extends Dao> DbMapper getMapper(Class<T> table, boolean check) {
-            return this.mTables.get(table);
+            DbMapper mapper = null;
+            if(this.mTables.containsKey(table)) {
+                mapper = this.mTables.get(table);
+                if(mapper == null) {
+                    mapper = DbUtils.createMapper(this, table);
+                    this.mTables.put(table, mapper);
+                }
+            }
+            if(check) DbException.checkMapper(mapper);
+            return mapper;
         }
 
         @Override
