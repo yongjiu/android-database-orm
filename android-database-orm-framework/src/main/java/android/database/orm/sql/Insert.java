@@ -79,7 +79,7 @@ public class Insert extends ResultExecutable {
         Class<T> table = (Class<T>)dao.getClass();
 
         Converter<T> converter = this.mDbContext.getConverter(table);
-        ContentValues contentValues = converter.toContentValues(dao);
+        ContentValues contentValues = converter.toContentValues(this.mDbContext, dao);
 
         DbMapper mapper = this.mDbContext.getMapper(table, true);
         return this.exec(mapper, contentValues);

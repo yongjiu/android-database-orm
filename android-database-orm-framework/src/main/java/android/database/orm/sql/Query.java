@@ -131,7 +131,7 @@ public class Query implements Closeable {
     private <T extends Dao> T toObject(Cursor cursor, Class<T> cls, boolean close) {
         try {
             Converter<T> converter = this.mDbMapping.getConverter(cls);
-            T dao = converter.toDao(cursor, cls);
+            T dao = converter.toDao(cursor, this.mDbMapping, cls);
             return dao;
         } finally {
             if(close) this.close();

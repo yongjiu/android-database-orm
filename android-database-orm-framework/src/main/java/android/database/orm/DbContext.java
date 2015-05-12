@@ -254,7 +254,7 @@ public class DbContext implements DbMapping {
                 return this.mConverters.get(table);
 
             if(this.mReflectConverter == null)
-                this.mReflectConverter = new ReflectConverter<T>(this);
+                this.mReflectConverter = new ReflectConverter();
 
             return this.mReflectConverter;
         }

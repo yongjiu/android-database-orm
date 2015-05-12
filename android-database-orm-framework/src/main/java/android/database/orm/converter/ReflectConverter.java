@@ -12,25 +12,20 @@ import android.database.orm.DbUtils;
  */
 public class ReflectConverter<T extends Dao> implements Converter<T> {
 
-    private final DbMapping mDbMapping;
-    public ReflectConverter(DbMapping mapping) {
-        this.mDbMapping = mapping;
-    }
-
     @Override
     public Class<T> getTable() {
         return null;
     }
 
     @Override
-    public ContentValues toContentValues(T dao) {
-        DbMapper mapper = this.mDbMapping.getMapper(dao.getClass(), true);
+    public ContentValues toContentValues(DbMapping mapping, T dao) {
+        DbMapper mapper = mapping.getMapper(dao.getClass(), true);
         return DbUtils.toContentValues(mapper, dao);
     }
 
     @Override
-    public T toDao(Cursor cursor, Class<T> table) {
-        return DbUtils.toObject(this.mDbMapping, cursor, table);
+    public T toDao(Cursor cursor, DbMapping mapping, Class<T> table) {
+        return DbUtils.toObject(mapping, cursor, table);
     }
 
 }
