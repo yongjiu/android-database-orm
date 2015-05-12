@@ -38,16 +38,13 @@ public class DbContextTest extends ApplicationTest {
 
         Result result3  = this.mDbContext.delete(UserDao.class).where("1=1").exec();
         Assert.assertTrue(result3.success());
-
-        Result result4  = this.mDbContext.delete(UserDao.class).where("1=1").exec();
-        Assert.assertTrue(result4.success());
     }
 
     @Override
     public void testSelectMethod() {
         // EXEC SELECT * from TABLE WHERE 1=1;
         Query query1        = this.mDbContext.select(UserDao.class).where("1=1").exec(); // select all
-        UserDao dao1        = query1.single(UserDao.class, 0);
+        UserDao dao1        = query1.singleOrNull(UserDao.class);
 
         Query query2        = this.mDbContext.select(UserDao.class).distinct().groupBy("").orderBy("").having("").limit(100).exec();
         List<UserDao> list2 = query2.list(UserDao.class);
@@ -81,7 +78,7 @@ public class DbContextTest extends ApplicationTest {
                 .exec();
         Assert.assertTrue(result1.success());
 
-        Result result2 = new Update(this.mDbContext, UserDao.class).update(new UserDao(), "ID=?", "1");
+        Result result2 = this.mDbContext.update(UserDao.class).update(new UserDao(), "ID=?", "1");
         Assert.assertTrue(result2.success());
     }
 

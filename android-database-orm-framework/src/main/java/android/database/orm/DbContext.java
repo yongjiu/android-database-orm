@@ -1,6 +1,7 @@
 package android.database.orm;
 
 import android.content.Context;
+import android.database.DatabaseErrorHandler;
 import android.database.orm.converter.Converter;
 import android.database.orm.converter.ReflectConverter;
 import android.database.orm.sql.*;
@@ -120,7 +121,7 @@ public class DbContext implements DbMapping {
         SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
         db.beginTransaction();
         try {
-            success &= exec(exec, db, this.mDbMapping, tables);
+            success &= exec(exec, db, this.mDbMapping, Arrays.asList(tables));
             if(success) db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -173,6 +174,7 @@ public class DbContext implements DbMapping {
         private final Context                               mContext;
         private final Map<Class<? extends Dao>, DbMapper>   mTables;
         private final Map<Class<? extends Dao>, Converter>  mConverters;
+        private DatabaseErrorHandler                        mErrorHandler;
         private SQLiteDatabase.CursorFactory                mCursorFactory;
         private String                                      mDatabaseName;
         private int                                         mDatabaseVersion;
@@ -182,6 +184,8 @@ public class DbContext implements DbMapping {
             this.mTables        = new HashMap<Class<? extends Dao>, DbMapper>();
             this.mConverters    = new HashMap<Class<? extends Dao>, Converter>();
             this.mContext       = context;
+            this.mErrorHandler  = null;
+            this.mCursorFactory = null;
         }
 
         public Context getContext() {
@@ -200,6 +204,10 @@ public class DbContext implements DbMapping {
             return this.mCursorFactory;
         }
 
+        public DatabaseErrorHandler getDatabaseErrorHandler() {
+            return this.mErrorHandler;
+        }
+
         public Builder setDatabaseName(String name) {
             this.mDatabaseName = name;
             return this;
@@ -213,6 +221,10 @@ public class DbContext implements DbMapping {
         public Builder setCursorFactory(SQLiteDatabase.CursorFactory cursorFactory) {
             this.mCursorFactory = cursorFactory;
             return this;
+        }
+
+        public DatabaseErrorHandler setDatabaseErrorHandler(DatabaseErrorHandler errorHandler) {
+            return this.mErrorHandler;
         }
 
         /**************************************************************************************************************/
@@ -318,33 +330,27 @@ public class DbContext implements DbMapping {
         }
 
         public DbContext build() {
-            final DbMapping mapping = this;
-            return new DbContext(this, new SQLiteOpenHelper(
-                    this.getContext(),
-                    this.getDatabaseName(),
-                    this.getCursorFactory(),
-                    this.getDatabaseVersion()) {
-                @Override
-                public void onCreate(SQLiteDatabase db) {
-                    DbContext.createTables(db, mapping);
-                }
-                @Override
-                public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-                }
-            });
+            return this.build(new DbHelper(this));
         }
     }
 
     /**************************************************************************************************************/
 
     public static <T extends Dao> void createTables(SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
-        List<Class<T>> daos = tables.length == 0 ? new ArrayList(mapping.getTables()) : Arrays.asList(tables);
-        if(daos.isEmpty()) return;
-        exec(true, db, mapping, tables);
+        DbContext.createOrDropTables(true, db, mapping, tables);
     }
 
-    private static <T extends Dao> Boolean exec(Boolean exec, SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
+    public static <T extends Dao> void dropTables(SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
+        DbContext.createOrDropTables(false, db, mapping, tables);
+    }
+
+    private static <T extends Dao> void createOrDropTables(boolean createOrDrop, SQLiteDatabase db, DbMapping mapping, Class<T>... tables) {
+        List<Class<T>> list = tables.length == 0 ? new ArrayList(mapping.getTables()) : Arrays.asList(tables);
+        if(list.isEmpty()) return;
+        DbContext.exec(createOrDrop, db, mapping, list);
+    }
+
+    private static <T extends Dao> Boolean exec(Boolean exec, SQLiteDatabase db, DbMapping mapping, List<Class<T>> tables) {
         boolean success = true;
         for (Class<T> table : tables) {
             DbMapper mapper = mapping.getMapper(table, true);
