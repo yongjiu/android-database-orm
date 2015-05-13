@@ -31,6 +31,10 @@ public class DbMapper {
         this.mName = tableName;
     }
 
+    public DbMapping getDbMapping() {
+        return this.mDbMapping;
+    }
+
     public Class<? extends Dao> getType() {
         return this.mType;
     }
@@ -49,6 +53,11 @@ public class DbMapper {
 
     public String toString(String format) {
         return DbUtils.createTableDefinition(this, format);
+    }
+
+    public <T extends Dao> T newInstance() throws InstantiationException, IllegalAccessException {
+        Object instance = this.mType.newInstance();
+        return instance == null ? null : (T)instance;
     }
 
     public static class Mapping {

@@ -75,13 +75,10 @@ public class Insert extends ResultExecutable {
 
     public <T extends Dao> Result insert(T dao) {
         DbException.checkNull(dao, "dao");
-
         Class<T> table = (Class<T>)dao.getClass();
-
-        Converter<T> converter = this.mDbContext.getConverter(table);
-        ContentValues contentValues = converter.toContentValues(this.mDbContext, dao);
-
         DbMapper mapper = this.mDbContext.getMapper(table, true);
+        Converter<T> converter = this.mDbContext.getConverter(table);
+        ContentValues contentValues = converter.toContentValues(mapper, dao);
         return this.exec(mapper, contentValues);
     }
 

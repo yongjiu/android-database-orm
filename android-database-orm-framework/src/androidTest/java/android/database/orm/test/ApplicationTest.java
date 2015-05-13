@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.orm.DbContext;
+import android.database.orm.DbMapper;
 import android.database.orm.converter.Converter;
 import android.database.orm.test.dao.*;
 import android.test.ApplicationTestCase;
@@ -38,13 +39,13 @@ public abstract class ApplicationTest extends ApplicationTestCase<Application> {
                                 return UserDao.class;
                             }
                             @Override
-                            public ContentValues toContentValues(UserDao dao) {
+                            public ContentValues toContentValues(DbMapper mapper, UserDao dao) {
                                 ContentValues contentValues = new ContentValues();
                                 // ...
                                 return contentValues;
                             }
                             @Override
-                            public UserDao toDao(Cursor cursor, Class<UserDao> table) {
+                            public UserDao toDao(DbMapper mapper, Cursor cursor) {
                                 UserDao dao = new UserDao();
                                 // ...
                                 return dao;
@@ -56,13 +57,13 @@ public abstract class ApplicationTest extends ApplicationTestCase<Application> {
                                 return SessionDao.class;
                             }
                             @Override
-                            public ContentValues toContentValues(SessionDao dao) {
+                            public ContentValues toContentValues(DbMapper mapper, SessionDao dao) {
                                 ContentValues contentValues = new ContentValues();
                                 // ...
                                 return contentValues;
                             }
                             @Override
-                            public SessionDao toDao(Cursor cursor, Class<SessionDao> table) {
+                            public SessionDao toDao(DbMapper mapper, Cursor cursor) {
                                 SessionDao dao = new SessionDao();
                                 // ...
                                 return dao;
@@ -74,13 +75,13 @@ public abstract class ApplicationTest extends ApplicationTestCase<Application> {
                                 return MessageDao.class;
                             }
                             @Override
-                            public ContentValues toContentValues(MessageDao dao) {
+                            public ContentValues toContentValues(DbMapper mapper, MessageDao dao) {
                                 ContentValues contentValues = new ContentValues();
                                 // ...
                                 return contentValues;
                             }
                             @Override
-                            public MessageDao toDao(Cursor cursor, Class<MessageDao> table) {
+                            public MessageDao toDao(DbMapper mapper, Cursor cursor) {
                                 MessageDao dao = new MessageDao();
                                 // ...
                                 return dao;

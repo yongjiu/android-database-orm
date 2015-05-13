@@ -2,7 +2,7 @@ package android.database.orm.core.db.converter;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.orm.DbMapping;
+import android.database.orm.DbMapper;
 import android.database.orm.core.db.dao.MessageDao;
 
 /**
@@ -16,7 +16,7 @@ public class MessageConverter extends BaseConverter<MessageDao> {
     }
 
     @Override
-    public ContentValues toContentValues(DbMapping mapping, MessageDao dao) {
+    public ContentValues toContentValues(DbMapper mapper, MessageDao dao) {
         ContentValues values = new ContentValues();
         values.put(MessageDao.COLUMN_ID,        dao.id);
         values.put(MessageDao.COLUMN_SESSION,   dao.session);
@@ -28,7 +28,7 @@ public class MessageConverter extends BaseConverter<MessageDao> {
     }
 
     @Override
-    public MessageDao toDao(Cursor cursor, DbMapping mapping, Class<MessageDao> table) {
+    public MessageDao toDao(DbMapper mapper, Cursor cursor) {
         MessageDao dao  = new MessageDao();
         dao.id          = cursor.getLong(cursor.getColumnIndex(MessageDao.COLUMN_ID));
         dao.session     = cursor.getLong(cursor.getColumnIndex(MessageDao.COLUMN_SESSION));

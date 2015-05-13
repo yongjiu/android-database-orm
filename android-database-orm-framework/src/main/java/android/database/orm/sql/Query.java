@@ -2,6 +2,7 @@ package android.database.orm.sql;
 
 import android.database.Cursor;
 import android.database.orm.Dao;
+import android.database.orm.DbMapper;
 import android.database.orm.DbMapping;
 import android.database.orm.converter.Converter;
 import android.database.sqlite.SQLiteDatabase;
@@ -128,10 +129,11 @@ public class Query implements Closeable {
         return this.toObject(this.mCursor, cls, true);
     }
 
-    private <T extends Dao> T toObject(Cursor cursor, Class<T> cls, boolean close) {
+    private <T extends Dao> T toObject(Cursor cursor, Class<T> table, boolean close) {
         try {
-            Converter<T> converter = this.mDbMapping.getConverter(cls);
-            T dao = converter.toDao(cursor, this.mDbMapping, cls);
+            DbMapper mapper = this.mDbMapping.getMapper(table, true);
+            Converter<T> converter = this.mDbMapping.getConverter(table);
+            T dao = converter.toDao(mapper, cursor);
             return dao;
         } finally {
             if(close) this.close();

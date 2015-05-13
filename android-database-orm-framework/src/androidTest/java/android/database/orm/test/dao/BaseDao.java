@@ -6,9 +6,11 @@ import android.database.orm.annotation.Column;
 /**
  * Created by yongjiu on 15/5/1.
  */
-public abstract class TestDao implements Dao {
+public abstract class BaseDao implements Dao {
 
-    @Column("ID")
-    public Long id;
+    public static final String COLUMN_CREATED = "created";
+
+    @Column
+    public Long created;
 
 }

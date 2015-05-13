@@ -12,19 +12,19 @@ public class DbContextTest extends ApplicationTest {
 
     @Override
     public void testCreateMethod() {
-        Boolean success = this.mDbContext.create(TestDao.class);
+        Boolean success = this.mDbContext.create(SessionDao.class);
         Assert.assertTrue(success);
     }
 
     @Override
     public void testTruncateMethod() {
-        Boolean success = this.mDbContext.truncate(TestDao.class);
+        Boolean success = this.mDbContext.truncate(UserDao.class);
         Assert.assertTrue(success);
     }
 
     @Override
     public void testDropMethod() {
-        Boolean success = this.mDbContext.drop(TestDao.class);
+        Boolean success = this.mDbContext.drop(MessageDao.class);
         Assert.assertTrue(success);
     }
 
@@ -43,14 +43,14 @@ public class DbContextTest extends ApplicationTest {
     @Override
     public void testSelectMethod() {
         // EXEC SELECT * from TABLE WHERE 1=1;
-        Query query1        = this.mDbContext.select(UserDao.class).where("1=1").exec(); // select all
+        Query query1        = this.mDbContext.select(UserDao.class).where("1=1").exec();
         UserDao dao1        = query1.singleOrNull(UserDao.class);
 
         Query query2        = this.mDbContext.select(UserDao.class).distinct().groupBy("").orderBy("").having("").limit(100).exec();
         List<UserDao> list2 = query2.list(UserDao.class);
 
         // EXEC SELECT ID, Name, Gender, Age from TABLE;
-        Query query3        = this.mDbContext.select(UserDao.class, "ID", "Name", "Gender", "Age").exec(); // select all
+        Query query3        = this.mDbContext.select(UserDao.class, UserDao.COLUMN_ID, UserDao.COLUMN_NAME, UserDao.COLUMN_GENDER, UserDao.COLUMN_AGE).exec(); // select all
         List<UserDao> list3 = query3.list(UserDao.class);
     }
 
@@ -58,9 +58,9 @@ public class DbContextTest extends ApplicationTest {
     public void testInsertMethod() {
         Result result1  = this.mDbContext.insert(UserDao.class)
                 .values()
-                .set("Name", "yongjiu")
-                .set("Gender", false)
-                .setNull("Age")
+                .set(UserDao.COLUMN_NAME, "yongjiu")
+                .set(UserDao.COLUMN_GENDER, false)
+                .setNull(UserDao.COLUMN_AGE)
                 .exec();
         Assert.assertTrue(result1.success());
 
@@ -70,15 +70,16 @@ public class DbContextTest extends ApplicationTest {
 
     @Override
     public void testUpdateMethod() {
+        String clause = String.format("%s=?", UserDao.COLUMN_ID);
         Result result1  = this.mDbContext.update(UserDao.class)
-                .set("Name", "yongjiu")
-                .set("Gender", true)
-                .setNull("Age")
-                .where("ID=?", "1")
+                .set(UserDao.COLUMN_NAME, "yongjiu")
+                .set(UserDao.COLUMN_GENDER, true)
+                .setNull(UserDao.COLUMN_AGE)
+                .where(clause, "1")
                 .exec();
         Assert.assertTrue(result1.success());
 
-        Result result2 = this.mDbContext.update(UserDao.class).update(new UserDao(), "ID=?", "1");
+        Result result2 = this.mDbContext.update(UserDao.class).update(new UserDao(), clause, "1");
         Assert.assertTrue(result2.success());
     }
 

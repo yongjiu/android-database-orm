@@ -41,13 +41,10 @@ public class Update extends ResultExecutable {
 
     public <T extends Dao> Result update(T dao, String clause, String... args) {
         DbException.checkNull(dao, "dao");
-
         Class<T> table = (Class<T>)dao.getClass();
-
-        Converter<T> converter = this.mDbContext.getConverter(table);
-        ContentValues contentValues = converter.toContentValues(this.mDbContext, dao);
-
         DbMapper mapper = this.mDbContext.getMapper(table, true);
+        Converter<T> converter = this.mDbContext.getConverter(table);
+        ContentValues contentValues = converter.toContentValues(mapper, dao);
         return this.exec(mapper, contentValues, clause, args);
     }
 

@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.orm.Dao;
 import android.database.orm.DbMapper;
-import android.database.orm.DbMapping;
 import android.database.orm.DbUtils;
 
 /**
@@ -18,14 +17,13 @@ public class ReflectConverter<T extends Dao> implements Converter<T> {
     }
 
     @Override
-    public ContentValues toContentValues(DbMapping mapping, T dao) {
-        DbMapper mapper = mapping.getMapper(dao.getClass(), true);
+    public ContentValues toContentValues(DbMapper mapper, T dao) {
         return DbUtils.toContentValues(mapper, dao);
     }
 
     @Override
-    public T toDao(Cursor cursor, DbMapping mapping, Class<T> table) {
-        return DbUtils.toObject(mapping, cursor, table);
+    public T toDao(DbMapper mapper, Cursor cursor) {
+        return DbUtils.toObject(cursor, mapper);
     }
 
 }

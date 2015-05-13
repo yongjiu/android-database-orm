@@ -119,8 +119,8 @@ public class DbContext implements DbMapping {
         if(tables.length == 0) return false;
         boolean success = true;
         SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             success &= exec(exec, db, this.mDbMapping, Arrays.asList(tables));
             if(success) db.setTransactionSuccessful();
         } finally {
@@ -138,14 +138,14 @@ public class DbContext implements DbMapping {
         db.close();
     }
 
-    public void execSQL(String sql, Object[] bindArgs) {
+    public void execSQL(String sql, Object... bindArgs) {
         SQLiteDatabase db = this.getDbHelper().getWritableDatabase();
-        db.execSQL(sql, bindArgs);
+        db.execSQL(sql, bindArgs.length == 0 ? null : bindArgs);
         db.close();
     }
 
-    public Query rawQuery(String sql, String[] selectionArgs) {
-        return Select.rawQuery(this, sql, selectionArgs);
+    public Query rawQuery(String sql, String... selectionArgs) {
+        return Select.rawQuery(this, sql, selectionArgs.length == 0 ? null : selectionArgs);
     }
 
     /**************************************************************************************************************/

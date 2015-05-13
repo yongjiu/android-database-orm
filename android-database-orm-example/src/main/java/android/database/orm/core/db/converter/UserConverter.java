@@ -2,7 +2,7 @@ package android.database.orm.core.db.converter;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.orm.DbMapping;
+import android.database.orm.DbMapper;
 import android.database.orm.DbUtils;
 import android.database.orm.core.db.dao.UserDao;
 
@@ -17,7 +17,7 @@ public class UserConverter extends BaseConverter<UserDao> {
     }
 
     @Override
-    public ContentValues toContentValues(DbMapping mapping, UserDao dao) {
+    public ContentValues toContentValues(DbMapper mapper, UserDao dao) {
         ContentValues values = new ContentValues();
         values.put(UserDao.COLUMN_ID,       dao.id);
         values.put(UserDao.COLUMN_NAME,     dao.name);
@@ -29,7 +29,7 @@ public class UserConverter extends BaseConverter<UserDao> {
     }
 
     @Override
-    public UserDao toDao(Cursor cursor, DbMapping mapping, Class<UserDao> table) {
+    public UserDao toDao(DbMapper mapper, Cursor cursor) {
         /*
         UserDao dao     = new UserDao();
         dao.id          = cursor.getLong(cursor.getColumnIndex(UserDao.COLUMN_ID));
@@ -42,7 +42,7 @@ public class UserConverter extends BaseConverter<UserDao> {
         dao.age         = cursor.getInt(cursor.getColumnIndex(UserDao.COLUMN_AGE));
         dao.created     = cursor.getLong(cursor.getColumnIndex(UserDao.COLUMN_CREATED));
         */
-        UserDao dao = DbUtils.toObject(mapping, cursor, table);
+        UserDao dao = DbUtils.toObject(cursor, mapper);
         return dao;
     }
 

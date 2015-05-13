@@ -28,53 +28,17 @@ public class DbUtils {
 
     /******************************************************************************************************************/
 
-    public static <T extends Dao> T toObject(DbMapping dbMapping, Cursor cursor, Class<T> table) {
+    public static <T extends Dao> T toObject(Cursor cursor, DbMapping dbMapping, Class<T> table) {
+        DbMapper mapper = dbMapping.getMapper(table, true);
+        return DbUtils.toObject(cursor, mapper);
+    }
+
+    public static <T extends Dao> T toObject(Cursor cursor, DbMapper mapper) {
         try {
-            DbMapper mapper = dbMapping.getMapper(table, true);
-            T t = table.newInstance();
-            int columnCount = cursor.getColumnCount();
-            for (int columnIndex=0; columnIndex<columnCount; columnIndex++) {
-                String columnName = cursor.getColumnName(columnIndex);
-                DbMapper.Mapping map = mapper.getMapping(columnName);
-                try {
-                    Object value = null;
-                    Field field = map.getField();
-                    Class<?> type = field.getType();
-                    if(cursor.isNull(columnIndex)) {
-                        // do nothing
-                    } else if(type == String.class) {
-                        value = cursor.getString(columnIndex);
-                    } else if (type.equals(Character.class) || type.equals(char.class)) {
-                        value = cursor.getString(columnIndex).charAt(0);
-                    } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-                        value = cursor.getInt(columnIndex) != 0;
-                    } else if(type == Byte.class || type == byte.class) {
-                        value = cursor.getInt(columnIndex);
-                    } else if(type == Byte[].class || type == byte[].class) {
-                        value = cursor.getBlob(columnIndex);
-                    } else if(type == Double.class || type == double.class) {
-                        value = cursor.getDouble(columnIndex);
-                    } else if(type == Float.class || type == float.class) {
-                        value = cursor.getFloat(columnIndex);
-                    } else if(type == Integer.class || type == int.class) {
-                        value = cursor.getInt(columnIndex);
-                    } else if(type == Long.class || type == long.class) {
-                        value = cursor.getLong(columnIndex);
-                    } else if(type == Short.class || type == short.class) {
-                        value = cursor.getShort(columnIndex);
-                    }
-                    if(field.isAccessible() == false)
-                        field.setAccessible(true);
-                    field.set(t, value);
-                } catch (java.lang.IllegalAccessException e) {
-                    e.printStackTrace();
-                    Log.d(TAG, String.format("toObject.set @ %s\n%s", e, e.getMessage()));
-                } catch (java.lang.IllegalArgumentException e) {
-                    e.printStackTrace();
-                    Log.d(TAG, String.format("toObject.set @ %s\n%s", e, e.getMessage()));
-                }
-            }
-            return t;
+            T instance = mapper.newInstance();
+            DbException.checkNull(instance, "instance");
+            DbUtils.toObject(cursor, mapper, instance);
+            return instance;
         } catch (java.lang.InstantiationException e) {
             e.printStackTrace();
             Log.d(TAG, String.format("toObject.newInstance @ %s\n%s", e, e.getMessage()));
@@ -83,6 +47,51 @@ public class DbUtils {
             e.printStackTrace();
             Log.d(TAG, String.format("toObject.newInstance @ %s\n%s", e, e.getMessage()));
             return null;
+        }
+    }
+
+    public static <T extends Dao> void toObject(Cursor cursor, DbMapper mapper, T instance) {
+        int columnCount = cursor.getColumnCount();
+        for (int columnIndex=0; columnIndex<columnCount; columnIndex++) {
+            String columnName = cursor.getColumnName(columnIndex);
+            DbMapper.Mapping map = mapper.getMapping(columnName);
+            try {
+                Object value = null;
+                Field field = map.getField();
+                Class<?> type = field.getType();
+                if(cursor.isNull(columnIndex)) {
+                    // do nothing
+                } else if(type == String.class) {
+                    value = cursor.getString(columnIndex);
+                } else if (type.equals(Character.class) || type.equals(char.class)) {
+                    value = cursor.getString(columnIndex).charAt(0);
+                } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+                    value = cursor.getInt(columnIndex) != 0;
+                } else if(type == Byte.class || type == byte.class) {
+                    value = cursor.getInt(columnIndex);
+                } else if(type == Byte[].class || type == byte[].class) {
+                    value = cursor.getBlob(columnIndex);
+                } else if(type == Double.class || type == double.class) {
+                    value = cursor.getDouble(columnIndex);
+                } else if(type == Float.class || type == float.class) {
+                    value = cursor.getFloat(columnIndex);
+                } else if(type == Integer.class || type == int.class) {
+                    value = cursor.getInt(columnIndex);
+                } else if(type == Long.class || type == long.class) {
+                    value = cursor.getLong(columnIndex);
+                } else if(type == Short.class || type == short.class) {
+                    value = cursor.getShort(columnIndex);
+                }
+                if(field.isAccessible() == false)
+                    field.setAccessible(true);
+                field.set(instance, value);
+            } catch (java.lang.IllegalAccessException e) {
+                e.printStackTrace();
+                Log.d(TAG, String.format("toObject.set @ %s\n%s", e, e.getMessage()));
+            } catch (java.lang.IllegalArgumentException e) {
+                e.printStackTrace();
+                Log.d(TAG, String.format("toObject.set @ %s\n%s", e, e.getMessage()));
+            }
         }
     }
 

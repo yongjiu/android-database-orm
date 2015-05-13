@@ -3,19 +3,45 @@ package android.database.orm.test.dao;
 import android.database.orm.annotation.Column;
 import android.database.orm.annotation.Table;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by yongjiu on 15/5/1.
  */
-@Table("tbl_user")
-public class UserDao extends TestDao {
+@Table(UserDao.TABLE_NAME)
+public class UserDao extends BaseDao {
 
-    @Column("Name")
+    public static final String TABLE_NAME       = "tbl_user";
+    public static final String COLUMN_ID        = "user_id";
+    public static final String COLUMN_NAME      = "name";
+    public static final String COLUMN_AVATAR    = "avatar";
+    public static final String COLUMN_GENDER    = "gender";
+    public static final String COLUMN_AGE       = "age";
+
+    @Column(COLUMN_ID)
+    public Long id;
+
+    @Column
     public String name;
 
-    @Column("Gender")
+    @Column
+    public String avatar;
+
+    @Column
     public Boolean gender;
 
-    @Column("Age")
+    @Column
     public Integer age;
+
+    private final List<SessionDao> sessions;
+
+    public UserDao() {
+        this.sessions = new ArrayList<SessionDao>();
+    }
+
+    public List<SessionDao> getSessions() {
+        return this.sessions;
+    }
 
 }
